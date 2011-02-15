@@ -63,20 +63,7 @@ double lsum(double la, double lb) {
     else return lb;
   }
 }
-double lfactorial(int x) {
-double lfact=0;
-if ((x==0)|(x==1)) lfact=0;
-else {
-  if (x<=23) {
-    for (int i=1; i<=x;i++){
-      lfact+=log(i);
-     }
-  }
- else lfact=0.5*log(2*x+1/3)+0.5*log(M_PI)+x*log(x)-x;
 
-}
-return(lfact);
-}
 
 void forward(double* data, double* lforward, double rprior[]) {
   vector<double> ldist(J);
@@ -88,7 +75,7 @@ void forward(double* data, double* lforward, double rprior[]) {
  // bool lower;
 if (debug) Rprintf("normal? %i\n",normal);
   if (normal) lforward[0]=aux1+aux2*(data[0]-mu[0])*(data[0]-mu[0])/sigma/sigma;
-  else lforward[0]=data[0]*log(mu[0])-mu[0]-lfactorial(data[0]);
+  else lforward[0]=data[0]*log(mu[0])-mu[0]-lgamma(data[0]+1);
   for (int j=1; j<J; j++) lforward[n*j]=-INF;
   if (verbose) Rprintf("\nCalculating forward matrix...\n");     
 //  int a=0;
@@ -99,7 +86,7 @@ if (debug) Rprintf("normal? %i\n",normal);
     // precompute ldist for data[i]
     for (int j=0; j<J; j++) {
       if (normal) ldist[j]=aux1+aux2*(data[i]-mu[j])*(data[i]-mu[j])/sigma/sigma;
-      else ldist[j]=data[i]*log(mu[j])-mu[j]-lfactorial(data[i]);
+      else ldist[j]=data[i]*log(mu[j])-mu[j]-lgamma(data[i]+1);
     }
     // recursion step
     if (priortype==2) priortemp=rprior[i];
@@ -137,7 +124,7 @@ void backward(double* data, double* lbackward, double* lforward, double* cp, dou
     // precompute ldist for data[i+1]
     for (int j=0; j<J; j++) {
       if (normal) ldist[j]=aux1+aux2*(data[i+1]-mu[j])*(data[i+1]-mu[j])/sigma/sigma;
-      else ldist[j]=data[i+1]*log(mu[j])-mu[j]-lfactorial(data[i+1]);
+      else ldist[j]=data[i+1]*log(mu[j])-mu[j]-lgamma(data[i+1]+1);
     }
     // recursion step
     if (priortype==2) priortemp=rprior[i];
@@ -190,7 +177,7 @@ for (int r=0; r<nsamples; r++) {
       if (priortype==2) priortemp=rprior[i];
       if (priortype==3) priortemp=rprior[j];
        if (normal) aux=rlbackward[n*(j+1)+i+1]-rlbackward[n*j+i]+log(priortemp)+aux1+aux2*(data[i+1]-rmu[j+1])*(data[i+1]-rmu[j+1])/sigma;
-       else aux=rlbackward[n*(j+1)+i+1]-rlbackward[n*j+i]+log(priortemp)+data[i+1]*log(rmu[j+1])-rmu[j+1]-lfactorial(data[i+1]);
+       else aux=rlbackward[n*(j+1)+i+1]-rlbackward[n*j+i]+log(priortemp)+data[i+1]*log(rmu[j+1])-rmu[j+1]-lgamma(data[i+1]+1);
        rand=log(runif(0,1.0));
        i++;
        if (rand<aux)
