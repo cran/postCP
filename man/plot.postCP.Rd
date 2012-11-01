@@ -38,7 +38,7 @@ p.col="blue",pch=16,p.cex=NA,m.col="brown",m.lty=1,m.lwd=1,l.col=NA,l.lty=NA,l.l
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.0\cr
+Version: \tab 1.6.1\cr
 Date: \tab 2012-11-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
