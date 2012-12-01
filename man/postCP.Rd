@@ -59,8 +59,8 @@ prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE)
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.1\cr
-Date: \tab 2012-11-01\cr
+Version: \tab 1.6.2\cr
+Date: \tab 2012-12-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

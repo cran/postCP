@@ -84,7 +84,9 @@ if (debug) Rprintf("normal?f %i\n",normal);
   else lforward[0]=data[0]*log(mu[0])-mu[0]-lgamma(data[0]+1);} else{
      lforward[0]=lprob[0];
   }
+//  for (int j=1; j<J; j++) lforward[n*j]=-INF;
   if (verbose) Rprintf("\nCalculating forward matrix...\n");     
+//  int a=0;
   for (int i=1; i<n; i++) {
     if (verbose) {
       if ((i+1)%10000==0)   Rprintf(".");
@@ -120,9 +122,15 @@ void backward(double* data, double* lbackward, double* lforward, double* lprob, 
   double aux1=-0.5*log(2*M_PI);
   double aux2=-0.5;
   double priortemp1;
+ // double aux3=log(0.5);
+
+ // bool upper;    
   if (debug) Rprintf("normal?b %i\n",normal);
  for (int j=0; j<J; j++) for (int i=0; i<n; i++) lbackward[n*j+i]=-INF;
+
+//  int a=J-2;
   lbackward[n*J-1]=0.0;
+//  for (int j=0; j<(J-1); j++) lbackward[n*j+n-1]=-INF;
   if (verbose) Rprintf("\nCalculating backward matrix...\n");      
   for (int i=n-2; i>=0; i--) {
    if (verbose) {
@@ -472,8 +480,10 @@ void viterbi_lev(double* data, double* lprob, double* bestcp, double* bestlevel,
 
 
   if (verbose) Rprintf("\nApplying Viterbi algorithm ...\n");      
+  //int  j=0;
   for (int k=0; k<nseg; k++) {vitstate[n*k]=0;
-  vitlevel[n*k]=0;}
+vitlevel[n*k]=0;}
+//  int k=0;
 
   for (int i=1; i<n; i++) {
      if (priortype==2) priortemp=rprior[i-1];
@@ -483,6 +493,9 @@ void viterbi_lev(double* data, double* lprob, double* bestcp, double* bestlevel,
        else ldist[0]=data[i]*log(mu[0])-mu[0]-lgamma(data[i]+1);} else{
             ldist[0]=lprob[i];
       }
+//   for (int j=0; j<J; j++)   
+//    vitstate[i]=vitstate[i-1];     
+    //  vitlevel[i]=vitlevel[i-1]; 
     if (verbose)   if ((i+1)%10000==0)  Rprintf("."); 
     for (int k=0;k<nseg;k++){ 
       // if (debug)Rprintf("%0.7f",ldist);
@@ -490,11 +503,14 @@ void viterbi_lev(double* data, double* lprob, double* bestcp, double* bestlevel,
        for (int j=0;j<J;j++){ 
          if (priortype==3) priortemp=rprior[0];
          maxvit=lviterbi[n*nseg*j+n*k+i-1]+log(1-priortemp);
-
+  //       change=false;
          vitstate[n*nseg*j+n*k+i]=k; 
          vitlevel[n*nseg*j+n*k+i]=j; 
          if (k>0){
+        
            if (priortype==3) priortemp=rprior[k-1];
+
+  //         changevit-INF; 
            for (int jj=0;jj<J;jj++){  
              if (jj!=j){  
                tempvit=lviterbi[n*nseg*jj+n*(k-1)+i-1]+log(priortemp); // log(J-1) penalizes changes too much               
@@ -502,6 +518,7 @@ void viterbi_lev(double* data, double* lprob, double* bestcp, double* bestlevel,
                  maxvit=tempvit;   
                  vitstate[n*nseg*j+n*k+i]=k-1; 
                  vitlevel[n*nseg*j+n*k+i]=jj; 
+             //    change=true;
                  lastlevel=jj;
                }
              }             

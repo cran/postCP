@@ -6,7 +6,7 @@ Maximum likelihood estimation of negative binomial data.
 \description{
   Find maximum likelihood estimates of size and mean parameters assuming a negative binomial distribution. Uses optim function, using Broyden-Fletcher-Goldfarb-Shanno (BFGS) method.}
 \usage{
-mleNB(x,eps.nb=1e-7)
+mleNB(x,eps.nb=1e-8)
 }
 \arguments{
 \item{x}{Vector of data with hypothesized negative binomial distribution.}
@@ -22,8 +22,8 @@ mleNB(x,eps.nb=1e-7)
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.1\cr
-Date: \tab 2012-11-01\cr
+Version: \tab 1.6.2\cr
+Date: \tab 2012-12-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

@@ -1,17 +1,17 @@
+
 lesum<-function(lx) { # finds log of sum of exponentials
         max.l=which.max(lx);
         out=lx[max.l]+log(sum(exp(-abs(lx-lx[max.l]))));
         return(out);
      }
 
-mleNB <- function(x,eps.nb=1e-7){
+mleNB <- function(x,eps.nb=1e-8){
 require(MASS);
 if ((length(x)>1)&(mean(x)>0)) out=fitdistr(x,"Negative Binomial",control=list(reltol=eps.nb))$estimate else out=c(100,x[1])+eps.nb;
 return(out);
 }
 
-postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-7, prior=0.5, prior.type="n"){
-
+postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-8, prior=0.5, prior.type="n"){
 
   k=length(seg)+1;
   print(paste("Number of segments:",k));
@@ -33,8 +33,8 @@ postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-7, prior=0.5, prior.type
     } 
     if (model==3){
       negbin.est=mleNB(data,eps.nb=eps.nb);
-      BIC=-sum(dnbinom(data,mu=negbin.est[2],size=negbin.est[1],log=TRUE))+2*log(n);
-      AIC=-sum(dnbinom(data,mu=negbin.est[2],size=negbin.est[1],log=TRUE))+2*2;
+      BIC=-sum(dnbinom(data,mu=negbin.est[2],size=negbin.est[1],log=TRUE))+1*log(n);
+      AIC=-sum(dnbinom(data,mu=negbin.est[2],size=negbin.est[1],log=TRUE))+1*2;
       entropy=0;
     } 
   }else{
@@ -48,7 +48,7 @@ postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-7, prior=0.5, prior.type
     # initial run of postCP
     out=viterbi(lprob=lprob.matrix,verbose=FALSE,prior=prior,prior.type=prior.type);
     bestcp=out$bestcp;
-    state.temp=rep(1:k,diff(c(0,seg,n)));
+    state.temp=rep(1:k,diff(c(0,out$bestcp,n)));
     out.mle=lapply(split(data,state.temp),mleNB,eps.nb=eps.nb);
     out.sizes=sapply(out.mle,function(x) x[1]);
     out.means=sapply(out.mle,function(x) x[2]);
@@ -57,8 +57,8 @@ postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-7, prior=0.5, prior.type
     rm(out);
     out=postCP(lprob=lprob.matrix,keep=TRUE,verbose=FALSE,initsegci=FALSE,ci=0,prior=prior,prior.type=prior.type);
    
-    BIC=-sum(dnbinom(data,size=out.sizes[state.temp],mu=out.means[state.temp],log=TRUE))+(k*2)*log(n);
-    AIC=-sum(dnbinom(data,size=out.sizes[state.temp],mu=out.means[state.temp],log=TRUE))+(k*2)*2;
+    BIC=-sum(dnbinom(data,size=out.sizes[state.temp],mu=out.means[state.temp],log=TRUE))+(k*1)*log(n);
+    AIC=-sum(dnbinom(data,size=out.sizes[state.temp],mu=out.means[state.temp],log=TRUE))+(k*1)*2;
    }else{
       out=viterbi(data,seg,model,verbose=FALSE,prior=prior,prior.type=prior.type);
       bestcp=out$bestcp;
@@ -82,7 +82,7 @@ postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-7, prior=0.5, prior.type
       }
     }
    lpost.trans=log(out$post.cp)+out$lforward[1,1]+out$lbackward[1,1]-out$lforward[-n,-k]-out$lbackward[-n,-k];
-   entropy=sum(out$post.state[1,1]*log(out$post.state[1,1]),na.rm=TRUE)+sum(out$post.cp*lpost.trans,na.rm=TRUE);
+   entropy=-sum(out$post.state[1,1]*log(out$post.state[1,1]),na.rm=TRUE)-sum(out$post.cp*lpost.trans,na.rm=TRUE);
   }
    ICL=BIC+entropy;
   if (model!=3) { scores=c(ICL,AIC,BIC,mBIC); names(scores)=c("ICL","AIC","BIC","mBIC")} else {scores=c(ICL,AIC,BIC); names(scores)=c("ICL","AIC","BIC")};
@@ -90,7 +90,7 @@ postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-7, prior=0.5, prior.type
   results;
 }
 
-postCPmodelsel <- function(data,K.range,model=1,greedy=TRUE,eps.nb=1e-7){
+postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,eps.nb=1e-8){
 
   n=length(data);
   K.min=K.range[1];
@@ -101,11 +101,13 @@ postCPmodelsel <- function(data,K.range,model=1,greedy=TRUE,eps.nb=1e-7){
   AIC=numeric();
   bestcp=list();
   k=K.min;
-  if (!greedy) seg.matrix=Segmentor(data,model=model,Kmax=K.max)$breaks else seg.matrix=numeric();
+  if (!greedy) {
+     if (model==2) seg.matrix=cghseg:::segmeanCO(data, Kmax=K.max)$t.est else seg.matrix=Segmentor(data,model=model,Kmax=K.max)$breaks;     
+  }  else seg.matrix=numeric();
 
   modelsel1<- function(k,data,seg.matrix, model, eps.nb = eps.nb){
   	 if (k>1) {if (length(seg.matrix)==0) seg=GreedySegmente(data,k)[2:k]-1 else seg=seg.matrix[k,1:(k-1)];} else seg=numeric();
-	out=postCPcrit(data,seg,model,eps.nb=1e-7);
+	out=postCPcrit(data,seg,model,eps.nb=1e-8);
 	return(out);
   }
   out=sapply(K.range,modelsel1,data=data,seg.matrix=seg.matrix,model=model,eps.nb=eps.nb);

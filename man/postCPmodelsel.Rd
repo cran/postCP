@@ -7,13 +7,13 @@
   Estimates number of segments in data using model selection criteria for change-point problems. Minimizes ICL (Information Completed Likelihood), AIC (Akaike's Information Criterion), BIC (Bayesian Information Criterion), and mBIC (modified Bayesian Information Criterion) for values specified in K.range.
 }
 \usage{
-postCPmodelsel(data,K.range,model=1,greedy=TRUE,eps.nb=1e-7) 
+postCPmodelsel(data,K.range,model=1,greedy=FALSE,eps.nb=1e-8) 
 }
 \arguments{
 \item{data}{A vector of observations to be segmented. Must have no missing values.}
 \item{K.range}{Vector of range of possible K number of segments.}
 \item{model}{Emission distribution of observed data, 1: Poisson (default), 2: normal, 3: negative binomial.}
-\item{greedy}{Algorithm used to obtain initial segmentation for each fixed K. TRUE: use greedy algorithm based on least-squares minimization, FALSE: use pruned dynamic programming algorithm (PDPA), using Segmentor function.}
+\item{greedy}{Algorithm used to obtain initial segmentation for each fixed K. TRUE: use greedy algorithm based on least-squares minimization, FALSE (default): use pruned dynamic programming algorithm (PDPA), using Segmentor function.}
 \item{eps.nb}{Epsilon for maximum likelihood estimation of negative binomial, if mle does not converge, set to higher value.}
 }
 
@@ -36,8 +36,8 @@ Greedy segmentation consists of greedy algorithm using locally optimal binary se
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.1\cr
-Date: \tab 2012-11-01\cr
+Version: \tab 1.6.2\cr
+Date: \tab 2012-12-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

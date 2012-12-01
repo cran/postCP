@@ -7,7 +7,7 @@
   Obtains model selection criteria for change-point problems, after an initial set of change-points within the data has already been obtained. Calculates ICL (Information Completed Likelihood), AIC (Akaike's Information Criterion), BIC (Bayesian Information Criterion), and mBIC (modified Bayesian Information Criterion). Calculated for segment-based model, with different levels estimated for each segment.
 }
 \usage{
-postCPcrit(data,seg=numeric(),model,eps.nb=1e-7,prior=0.5,prior.type="n") 
+postCPcrit(data,seg=numeric(),model,eps.nb=1e-8,prior=0.5,prior.type="n") 
 }
 \arguments{
 \item{data}{A vector of observations to be segmented. Must have no missing values.}
@@ -31,8 +31,8 @@ mBIC: For normal and Poisson data, modified Bayesian Information Criterion, acco
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.1\cr
-Date: \tab 2012-11-01\cr
+Version: \tab 1.6.2\cr
+Date: \tab 2012-12-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
