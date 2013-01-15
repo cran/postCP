@@ -16,8 +16,8 @@ prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE)
 \arguments{
 \item{data}{A vector of observations to be segmented. Must have no missing values.}
 \item{seg}{For K segments, a vector of K-1 initial estimates of change-point locations, corresponding to the index of the last observation of the first K-1 segments.}
-\item{model}{Emission distribution of observed data, 1: Poisson (default), 2: normal.}
-\item{level.ind}{Vector of indices of length n, each index corresponding to observations with the same mean. Index of first observation must be 1; indices must be integers and range from 1:J for J different levels (observations in different segments may share same levels). Observations in adjacent segments may not share the same mean.}
+\item{model}{Emission distribution of observed data, 1: Poisson (default), 2: normal, 3: negative binomial.}
+\item{level.ind}{Optional for level-based model, where distributions may be shared within non-adjacent segments. Vector of indices of length n, each index corresponding to observations with the same mean. Index of first observation must be 1; indices must be integers and range from 1:J for J different levels (observations in different segments may share same levels). Observations in adjacent segments may not share the same mean.}
 \item{lprob}{Instead of data, seg, and model, enter n*K matrix of log-densities for emission distribution, each row i corresponds to each observations, and each column k is the log-density of observation in row i in state k}
 \item{keep}{Saves raw data, forward and backward matrices, and matrix of posterior change-point probabilities. Default=TRUE}
 \item{ci}{Confidence interval displayed for each change-point location.}
@@ -44,8 +44,8 @@ prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE)
 \item{fbsample$data}{Matrix of generated data of nsamples rows, each row containing vector of n observations.}
 \item{data}{If keep=TRUE, the segmented data (if entered).}
 \item{lprob}{If keep=TRUE, the log-densities (if entered).}
-\item{lforward}{If keep=TRUE, matrix of log of forward probabilities, n rows corresponding to observations and K columns corresponding to states.}
-\item{lbackward}{If keep=TRUE, matrix of log of backward probabilities, n rows corresponding to observations and K columns corresponding to states.}
+\item{lforward}{If keep=TRUE, matrix of log of forward probabilities, n rows corresponding to observations and K columns corresponding to states. If using level-based model, lforward will be a list with one matrix corresponding to each level.}
+\item{lbackward}{If keep=TRUE, matrix of log of backward probabilities, n rows corresponding to observations and K columns corresponding to states. If using level-based model, lbackward will be a list with one matrix corresponding to each level.}
 \item{post.cp}{If keep=TRUE, matrix of posterior change-point probabilities, prob at row i column k is the probability of the kth change-point occurring at observation i.}
 \item{post.state}{If keep=TRUE, matrix of posterior hidden state probabilities, prob at row i column k is the probability of observation i being in state k.}
 \item{post.level}{If keep=TRUE, matrix of posterior mean probabilities, prob at row i column j is the probability of observation i having mean j.}
@@ -59,8 +59,8 @@ prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE)
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.2\cr
-Date: \tab 2012-12-01\cr
+Version: \tab 1.6.3\cr
+Date: \tab 2013-01-15\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

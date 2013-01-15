@@ -110,8 +110,8 @@ print.postCPsample <- function(x,...)
 postCP <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE) UseMethod("postCP")
 
 postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE) {
-  if ((model!=1)&(model!=2)){
-    stop("Choose model=1 (Poisson) or 2 (normal)")
+  if ((model!=1)&(model!=2)&(model!=3)){
+    stop("Choose model=1 (Poisson) or 2 (normal) or 3 (negative binomial)")
   }
   n=length(data);
 
@@ -170,7 +170,16 @@ postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),
        if (length(lprob)==0) stop("Number of level changes in level.ind does not match number of change-points in seg")     
     }
   }
-    probs=(length(lprob)>0)
+  if (model==3){
+    if (!level.based) state.temp=rep(1:nseg,diff(c(0,seg,n))) else state.temp=level.ind;
+    out.mle=lapply(split(data,state.temp),mleNB,eps.nb=1e-8);
+    out.sizes=sapply(out.mle,function(x) x[1]);
+    out.means=sapply(out.mle,function(x) x[2]);
+    # log-density of neg binomial, 1 column for each possible state
+    lprob=matrix(dnbinom(rep(data,J),size=out.sizes[rep(1:J,each=n)],mu=out.means[rep(1:J,each=n)],log=TRUE),ncol=J);
+#    level.based=FALSE;
+  }
+  probs=(length(lprob)>0);
   if (sum(prior<0|prior>1)>0) {
     stop("Choose all priors between 0 and 1");
   }
@@ -299,25 +308,27 @@ if (level.based) best.level=rep(0,nseg)
     
      cp.out=matrix(cpconfint,ncol=3)
      colnames(cp.out)=c("est",paste("lo.",ci,sep=""),paste("hi.",ci,sep=""))
-    
-     if (model==1) {
-        model.dist="Poisson"
-        postCP.res=list(model=model.dist,n=n,cp.est=cp.out,means=rmu1,prior=prior,prior.type=ptype,fbsample=fbsample)
-     }
      if (model==2) {
         model.dist="normal"
         postCP.res=list(model=model.dist,n=n,cp.est=cp.out,means=rmu1,sds=rsigma,prior=prior,prior.type=ptype,fbsample=fbsample)
+     } else{
+       model.dist="";
+       if (model==1) model.dist="Poisson";
+       if (model==3) model.dist="negative Binomial";
+       postCP.res=list(model=model.dist,n=n,cp.est=cp.out,means=rmu1,prior=prior,prior.type=ptype,fbsample=fbsample)    
      }
+
    } else{ 
      cp.out=matrix(cpconfint,ncol=3)
      colnames(cp.out)=c("est",paste("lo.",ci,sep=""),paste("hi.",ci,sep=""))
-     if (model==1)  {
-       model.dist="Poisson"
-       postCP.res=list(model=model.dist,n=n,cp.est=cp.out,means=rmu1,prior=prior,prior.type=ptype)
-     }
      if (model==2) {
        model.dist="normal"
       postCP.res=list(model=model.dist,n=n,cp.est=cp.out,means=rmu1,sds=rsigma,prior=prior,prior.type=ptype)
+     }else{
+         model.dist="";
+        if (model==1)  model.dist="Poisson";
+        if (model==3)  model.dist="negative Binomial";             
+        postCP.res=list(model=model.dist,n=n,cp.est=cp.out,means=rmu1,prior=prior,prior.type=ptype)
      }     
   } 
   postCP.res$nseg=nseg
@@ -365,7 +376,7 @@ if (level.based) best.level=rep(0,nseg)
      postCP.res$post.level= matrix(post.level,ncol=J)
      }
   } else  postCP.res$seg=seg
-  if (probs) postCP.res$model="blank"
+  if (probs&model.dist=="") postCP.res$model="blank"
   postCP.res$call <- match.call()
   class(postCP.res) <- "postCP"
   postCP.res
@@ -374,8 +385,12 @@ if (level.based) best.level=rep(0,nseg)
 print.postCP <- function(x,...)
 { cat("Call:\n")
   print(x$call)
-  data.ent=is.element("data",x) # T if data entered instead of log-densities
-  if (data.ent)  out.table=data.frame(seg=1:length(x$means),start=c(1,x$seg+1),end=c(x$seg,x$n),size=c(x$seg,x$n)-c(1,x$seg+1)+1,mean=x$means) else out.table=data.frame(seg=1:length(x$means),start=c(1,x$cp.est[,1]+1),end=c(x$cp.est[,1],x$n),size=c(x$cp.est[,1],x$n)-c(1,x$cp.est[,1]+1)+1)
+  data.ent=is.element("data",names(x)) # T if data entered instead of log-densities
+  if (!is.element("best.level",names(x))) {
+     if (data.ent)  out.table=data.frame(seg=1:length(x$means),start=c(1,x$seg+1),end=c(x$seg,x$n),size=c(x$seg,x$n)-c(1,x$seg+1)+1,mean=x$means) else out.table=data.frame(seg=1:length(x$means),start=c(1,x$cp.est[,1]+1),end=c(x$cp.est[,1],x$n),size=c(x$cp.est[,1],x$n)-c(1,x$cp.est[,1]+1)+1)
+  } else{
+     if (data.ent)  out.table=data.frame(seg=1:length(x$means),level=x$level.ind[c(x$seg,x$n)],start=c(1,x$seg+1),end=c(x$seg,x$n),size=c(x$seg,x$n)-c(1,x$seg+1)+1,mean=x$means) else out.table=data.frame(seg=1:length(x$means),level=x$level.ind[c(x$cp.est,x$n)],start=c(1,x$cp.est[,1]+1),end=c(x$cp.est[,1],x$n),size=c(x$cp.est[,1],x$n)-c(1,x$cp.est[,1]+1)+1)
+  }
 
   if (data.ent) {cat("\nDistribution:")
   print(x$model)}
@@ -415,8 +430,6 @@ print.postCP <- function(x,...)
     str(x$post.cp)
     cat("\nState probability matrix: ($post.state)")
     str(x$post.state)
-    cat("\nState probability matrix: ($post.state)")
-    str(x$post.state)
     if (is.element("post.level",names(x))){
      cat("\nLevel probability matrix: ($post.level)")
       str(x$post.level)   
@@ -433,8 +446,8 @@ print.postCP <- function(x,...)
 
 viterbi <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),prior=0.5,prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE) {
   if (length(lprob)>0) model=0;
-  if ((model!=1)&(model!=2)&(length(lprob)==0)){
-    stop("Choose model=1 (Poisson) or 2 (normal)")
+  if ((model!=1)&(model!=2)&(model!=3)&(length(lprob)==0)){
+    stop("Choose model=1 (Poisson), 2 (normal) or 3 (negative binomial)")
   }
   n=length(data);
 

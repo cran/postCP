@@ -2,8 +2,8 @@ Package: postCP
 Type: Package
 Title: A package to estimate posterior probabilities and perform model
         selection in change-point models using constrained HMM.
-Version: 1.6.2
-Date: 2012-12-01
+Version: 1.6.3
+Date: 2013-01-15
 Author: Gregory Nuel and The Minh Luong
 Maintainer: The Minh Luong <the-minh.luong@parisdescartes.fr>
 Contact: Gregory Nuel <gregory.nuel@parisdescartes.fr>
@@ -22,6 +22,6 @@ LazyLoad: yes
 Depends: MASS, Segmentor3IsBack, cghseg
 LinkingTo:
 SystemRequirements: GNU make
-Packaged: 2012-12-21 10:20:44 UTC; The Minh
+Packaged: 2013-01-31 15:08:22 UTC; tluong
 Repository: CRAN
-Date/Publication: 2012-12-21 16:39:07
+Date/Publication: 2013-01-31 17:04:19

@@ -36,8 +36,8 @@ Greedy segmentation consists of greedy algorithm using locally optimal binary se
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.2\cr
-Date: \tab 2012-12-01\cr
+Version: \tab 1.6.3\cr
+Date: \tab 2013-01-15\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

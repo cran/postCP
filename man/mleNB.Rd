@@ -22,8 +22,8 @@ mleNB(x,eps.nb=1e-8)
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.2\cr
-Date: \tab 2012-12-01\cr
+Version: \tab 1.6.3\cr
+Date: \tab 2013-01-15\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
@@ -51,7 +51,7 @@ Venables, W.N. and Ripley, B.D. (2002) Modern Applied Statistics with S. Fourth 
 
 \examples{
 require(postCP);
-N=2000; x=rnbinom(N,size=10.0,mu=2.0);
+N=2000; x=rnbinom(N,size=10.0,mu=5.0);
 mleNB(x);
 }
 

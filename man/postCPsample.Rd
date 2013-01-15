@@ -14,7 +14,7 @@ prior=0.5,prior.type="n",verbose=TRUE,debug=FALSE)
 }
 \arguments{
 \item{postCP.res}{Results of postCP with keep=TRUE, use as input for postCPsample.}\item{nsamples}{Generated number of replicates of J-1 change-points.}
-\item{gen.data}{Generate matrix of segmented data, each row corresponding to a different replicate. "p" for parametric resampling, "np" for non-parametric re-sampling, "n" for no resampling.}
+\item{gen.data}{Generate matrix of segmented data, each row corresponding to a different replicate. "p" for parametric resampling, "np" for non-parametric re-sampling, "n" for no resampling. Parametric resampling is only done for Poisson or normally distributed data.}
 \item{prior}{Transition probabilities chosen as priors for HMM model. For homogeneous HMM, enter a scalar between 0 and 1 (default: 0.5). For heterogeneous HMM, enter a vector of probabilities, of length n for n observations or J for J hidden states.}
 \item{prior.type}{Type of prior entered. For "n":homogeneous HMM (default), "o": vector of probabilities for each observation, "s": vector of probabilities for each hidden state.}
 \item{verbose}{Additional screen output, default=TRUE.}
@@ -30,8 +30,8 @@ prior=0.5,prior.type="n",verbose=TRUE,debug=FALSE)
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.2\cr
-Date: \tab 2012-12-01\cr
+Version: \tab 1.6.3\cr
+Date: \tab 2013-01-15\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
