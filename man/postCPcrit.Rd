@@ -31,8 +31,8 @@ mBIC: For normal and Poisson data, modified Bayesian Information Criterion, acco
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.3\cr
-Date: \tab 2013-01-15\cr
+Version: \tab 1.6.4\cr
+Date: \tab 2013-03-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

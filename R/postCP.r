@@ -107,9 +107,9 @@ print.postCPsample <- function(x,...)
   }
 }
 
-postCP <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE) UseMethod("postCP")
+postCP <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,eps.nb=1e-8,verbose=TRUE,debug=FALSE) UseMethod("postCP")
 
-postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,verbose=TRUE,debug=FALSE) {
+postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,eps.nb=1e-8,verbose=TRUE,debug=FALSE) {
   if ((model!=1)&(model!=2)&(model!=3)){
     stop("Choose model=1 (Poisson) or 2 (normal) or 3 (negative binomial)")
   }
@@ -172,7 +172,7 @@ postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),
   }
   if (model==3){
     if (!level.based) state.temp=rep(1:nseg,diff(c(0,seg,n))) else state.temp=level.ind;
-    out.mle=lapply(split(data,state.temp),mleNB,eps.nb=1e-8);
+    out.mle=lapply(split(data,state.temp),mleNB,eps.nb);
     out.sizes=sapply(out.mle,function(x) x[1]);
     out.means=sapply(out.mle,function(x) x[2]);
     # log-density of neg binomial, 1 column for each possible state
@@ -376,6 +376,7 @@ if (level.based) best.level=rep(0,nseg)
      postCP.res$post.level= matrix(post.level,ncol=J)
      }
   } else  postCP.res$seg=seg
+  if (model==3) postCP.res$eps.nb=eps.nb;
   if (probs&model.dist=="") postCP.res$model="blank"
   postCP.res$call <- match.call()
   class(postCP.res) <- "postCP"

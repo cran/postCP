@@ -63,9 +63,9 @@ postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-8, prior=0.5, prior.type
       out=viterbi(data,seg,model,verbose=FALSE,prior=prior,prior.type=prior.type);
       bestcp=out$bestcp;
      # redo postCP using a posteriori bestCP (viterbi) from previous postCP run
-      state.temp=rep(1:k,c(out$bestcp[1],diff(out$bestcp),n-max(out$bestcp)));
+      state.temp=rep(1:k,c(bestcp[1],diff(bestcp),n-max(bestcp)));
       out.means=aggregate(data,list(state.temp),mean)$x;
-      out=postCP(data,seg,model,keep=TRUE,verbose=FALSE,debug=FALSE,ci=0,prior=prior,prior.type=prior.type);
+      out=postCP(data,bestcp,model,keep=TRUE,verbose=FALSE,debug=FALSE,ci=0,prior=prior,prior.type=prior.type);
       if (model==2) {
         # use for normal data
 	SSB=sum(table(state.temp)*(out.means-mean(data))^2);
@@ -81,7 +81,19 @@ postCPcrit<-function(data,seg=numeric(),model,eps.nb=1e-8, prior=0.5, prior.type
         AIC=-sum(dpois(data,out.means[state.temp],TRUE))+(k)*2;
       }
     }
-   lpost.trans=log(out$post.cp)+out$lforward[1,1]+out$lbackward[1,1]-out$lforward[-n,-k]-out$lbackward[-n,-k];
+    if (model==1){
+       ldensmatrix=matrix(dpois(rep(data,k),out$means[rep(1:k,each=n)],log=TRUE),ncol=k);
+    }
+    if (model==2){
+       ldensmatrix=matrix(dnorm(rep(data,k),out$means[rep(1:k,each=n)],out$sds,log=TRUE),ncol=k)+log(out$sds);
+    } 
+    if (model==3){
+       ldensmatrix=matrix(dnbinom(rep(data,k),size=out.sizes[rep(1:k,each=n)],mu=out.means[rep(1:k,each=n)],log=TRUE),ncol=k);
+    }    
+   if (out$prior.type==1) prior=out$prior;
+   if (out$prior.type==2) prior=out$prior;
+   if (out$prior.type==3) prior=matrix(rep(out$prior,each=n-1),ncol=k-1);
+   lpost.trans=ldensmatrix[-1,-1]+out$lbackward[-1,-1]-out$lbackward[-n,-k]+log(prior);   
    entropy=-sum(out$post.state[1,1]*log(out$post.state[1,1]),na.rm=TRUE)-sum(out$post.cp*lpost.trans,na.rm=TRUE);
   }
    ICL=BIC+entropy;
@@ -101,13 +113,14 @@ postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,eps.nb=1e-8){
   AIC=numeric();
   bestcp=list();
   k=K.min;
+  if (length(K.range)<2) stop("Please choose models with at least two different values of K.");
   if (!greedy) {
-     if (model==2) seg.matrix=cghseg:::segmeanCO(data, Kmax=K.max)$t.est else seg.matrix=Segmentor(data,model=model,Kmax=K.max)$breaks;     
+     if (model==2) seg.matrix=cghseg:::segmeanCO(data, Kmax=K.max)$t.est else seg.matrix=getBreaks(Segmentor(data,model=model,Kmax=K.max));     
   }  else seg.matrix=numeric();
 
   modelsel1<- function(k,data,seg.matrix, model, eps.nb = eps.nb){
   	 if (k>1) {if (length(seg.matrix)==0) seg=GreedySegmente(data,k)[2:k]-1 else seg=seg.matrix[k,1:(k-1)];} else seg=numeric();
-	out=postCPcrit(data,seg,model,eps.nb=1e-8);
+	out=postCPcrit(data,seg,model,eps.nb);
 	return(out);
   }
   out=sapply(K.range,modelsel1,data=data,seg.matrix=seg.matrix,model=model,eps.nb=eps.nb);
@@ -136,6 +149,8 @@ postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,eps.nb=1e-8){
   if (model!=3) cp.loc$mBIC = bestcp[[best.K.mBIC]];
    
    if (model!=3) { scores=cbind(ICL,AIC,BIC,mBIC); colnames(scores)=c("ICL","AIC","BIC","mBIC");rownames=K.range;} else {scores=cbind(ICL,AIC,BIC); colnames(scores)=c("ICL","AIC","BIC");rownames=K.range;};
-  results<-list(ICL=K.range[best.K.ICL],AIC=K.range[best.K.AIC],BIC=K.range[best.K.BIC],mBIC=K.range[best.K.mBIC],scores=scores,cp.loc=cp.loc);
+  if (model!=3) results<-list(ICL=K.range[best.K.ICL],AIC=K.range[best.K.AIC],BIC=K.range[best.K.BIC],mBIC=K.range[best.K.mBIC],scores=scores,cp.loc=cp.loc)else{
+    results<-list(ICL=K.range[best.K.ICL],AIC=K.range[best.K.AIC],BIC=K.range[best.K.BIC],scores=scores,cp.loc=cp.loc,eps.nb=eps.nb)
+  }
   results;
 }
