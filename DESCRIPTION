@@ -2,10 +2,10 @@ Package: postCP
 Type: Package
 Title: A package to estimate posterior probabilities and perform model
         selection in change-point models using constrained HMM.
-Version: 1.6.4
-Date: 2013-03-01
+Version: 1.7.0
+Date: 2013-07-01
 Author: Gregory Nuel and The Minh Luong
-Maintainer: The Minh Luong <the-minh.luong@parisdescartes.fr>
+Maintainer: The Minh Luong <luongtm@yahoo.com>
 Contact: Gregory Nuel <gregory.nuel@parisdescartes.fr>
 Description: The functions are used for change-point problems, after an
         initial set of change-points within the data has already been
@@ -22,7 +22,7 @@ LazyLoad: yes
 Depends: MASS, Segmentor3IsBack, cghseg
 LinkingTo:
 SystemRequirements: GNU make
-Packaged: 2013-04-04 11:51:28 UTC; The Minh
+Packaged: 2013-11-27 10:52:59 UTC; ripley
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2013-04-04 17:33:54
+Date/Publication: 2013-11-28 22:32:46

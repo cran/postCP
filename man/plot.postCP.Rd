@@ -7,8 +7,9 @@
   Plots results of postCP, plots observed data (if included in postCP output), segment or posterior means, and posterior probabilities.
 }
 \usage{
-\method{plot}{postCP}(x, line.prob="cp",line.mean="seg",rm.outliers=0,main=character(),xlab=NA,ylab=NA,
-p.col="blue",pch=16,p.cex=NA,m.col="brown",m.lty=1,m.lwd=1,l.col=NA,l.lty=NA,l.lwd=NA, ...)
+\method{plot}{postCP}(x, line.prob="cp",line.mean="seg",rm.outliers=0,
+main=character(),xlab=NA,ylab=NA,p.col="blue",pch=16,p.cex=NA,
+m.col="brown",m.lty=1,m.lwd=1,l.col=NA,l.lty=NA,l.lwd=NA, ...)
 }
 \arguments{
 \item{x}{Results of postCP with keep=TRUE, use as input for plot.postCP.}
@@ -38,8 +39,8 @@ p.col="blue",pch=16,p.cex=NA,m.col="brown",m.lty=1,m.lwd=1,l.col=NA,l.lty=NA,l.l
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.4\cr
-Date: \tab 2013-03-01\cr
+Version: \tab 1.7.0\cr
+Date: \tab 2013-07-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

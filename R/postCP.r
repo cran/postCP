@@ -107,9 +107,9 @@ print.postCPsample <- function(x,...)
   }
 }
 
-postCP <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,eps.nb=1e-8,verbose=TRUE,debug=FALSE) UseMethod("postCP")
+postCP <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,disp.equal=TRUE,eps.nb=1e-8,verbose=TRUE,debug=FALSE) UseMethod("postCP")
 
-postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,eps.nb=1e-8,verbose=TRUE,debug=FALSE) {
+postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,prior.type="n",epsilon=1e-9,disp.equal=TRUE,eps.nb=1e-8,verbose=TRUE,debug=FALSE) {
   if ((model!=1)&(model!=2)&(model!=3)){
     stop("Choose model=1 (Poisson) or 2 (normal) or 3 (negative binomial)")
   }
@@ -135,9 +135,10 @@ postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),
   if (nseg>n) {
     stop("Number of segments larger than data");
   }
-  if (max(seg)>=n) {
-    stop("At least one change-point initialized to larger than n");
-  }
+  if (length(seg)>0) {
+    if (max(seg)>=n) {
+      stop("At least one change-point initialized to larger than n");
+    }}
   if (viterbi==FALSE) initsegci=TRUE;
   if (initsegci==FALSE) viterbi=TRUE;
   if ((sum(data<0)>0)&model==1) {
@@ -150,7 +151,7 @@ postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),
   if (!is.matrix(lprob)) {
     stop("Enter lprob as a matrix, with n rows (one for each observation) and J columns (one for each hidden state)");
   }
-  zero.prob=rowSums(exp(lprob))==0
+  zero.prob=rowSums(lprob!=-Inf)==0
   if (sum(zero.prob)>0) {stop(paste("Observation in row(s)",paste(which(zero.prob),collapse=","),"in matrix lprob have zero probabilities for all states, please re-enter lprob matrix"))}
 
     n=nrow(lprob);
@@ -171,13 +172,25 @@ postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),
     }
   }
   if (model==3){
-    if (!level.based) state.temp=rep(1:nseg,diff(c(0,seg,n))) else state.temp=level.ind;
-    out.mle=lapply(split(data,state.temp),mleNB,eps.nb);
-    out.sizes=sapply(out.mle,function(x) x[1]);
-    out.means=sapply(out.mle,function(x) x[2]);
-    # log-density of neg binomial, 1 column for each possible state
-    lprob=matrix(dnbinom(rep(data,J),size=out.sizes[rep(1:J,each=n)],mu=out.means[rep(1:J,each=n)],log=TRUE),ncol=J);
-#    level.based=FALSE;
+    if(disp.equal) {
+	  if (level.based) stop("For negative binomial model with equal disperson, please select level.based=FALSE.");
+          print("For negative binomial model with equal dispersion, segments will be chosen by PDPA method.");
+	  segout=Segmentor(data,model=model,Kmax=max(nseg,2));
+	  if (nseg>1) seg=(getBreaks(segout))[nseg,1:(nseg-1)];
+	  param.nb=list(prob=getParameters(segout)[nseg,1:nseg],disp=getOverdispersion(segout));
+      param.nb$prob=param.nb$prob+eps.nb;
+	  param.nb$size = param.nb$disp/(1 - param.nb$prob+eps.nb)
+      param.nb$mu = param.nb$disp * param.nb$prob/(1 - param.nb$prob+eps.nb)
+	  lprob=matrix(dnbinom(rep(data,nseg),size=param.nb$size,mu=param.nb$mu[rep(1:nseg,each=n)],log=TRUE),ncol=nseg)
+    }else{
+      if (!level.based) state.temp=rep(1:nseg,diff(c(0,seg,n))) else state.temp=level.ind;
+      out.mle=lapply(split(data,state.temp),mleNB,eps.nb);
+      out.sizes=sapply(out.mle,function(x) x[1]);
+      out.means=sapply(out.mle,function(x) x[2]);
+      # log-density of neg binomial, 1 column for each possible state
+      lprob=matrix(dnbinom(rep(data,J),size=out.sizes[rep(1:J,each=n)],mu=out.means[rep(1:J,each=n)],log=TRUE),ncol=J);
+   #    level.based=FALSE;
+    }
   }
   probs=(length(lprob)>0);
   if (sum(prior<0|prior>1)>0) {
@@ -359,7 +372,7 @@ if (level.based) best.level=rep(0,nseg)
         postCP.res$lforward=lapply(split(lforward,list(levindmat)),matrix,ncol=nseg)
         postCP.res$lbackward=lapply(split(lbackward,list(levindmat)),matrix,ncol=nseg)
    }
-     postCP.res$post.cp=matrix(post.cp,ncol=nseg-1)
+     if (nseg>1) postCP.res$post.cp=matrix(post.cp,ncol=nseg-1) else postCP.res$post.cp=numeric()
      if (!level.based) postCP.res$post.state=exp(postCP.res$lforward+postCP.res$lbackward-postCP.res$lforward[1,1]-postCP.res$lbackward[1,1]) else{
      lsum<-function(lx) {
         max.l=which.max(lx)
@@ -472,9 +485,10 @@ viterbi <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.i
   if (nseg>n) {
     stop("Number of segments larger than data");
   }
+  if (length(seg)>0){
   if (max(seg)>=n) {
     stop("At least one change-point initialized to larger than n");
-  }
+  }}
   if ((sum(data<0)>0)&model==1) {
     stop("Negative numbers with Poisson distribution specified, choose model=2");
   }
@@ -485,8 +499,8 @@ viterbi <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.i
   if (!is.matrix(lprob)) {
     stop("Enter lprob as a matrix, with n rows (one for each observation) and J columns (one for each hidden state)");
   }
-  zero.prob=rowSums(exp(lprob))==0
-  if (sum(zero.prob)>0) {stop(paste("Observation in row(s)",paste(which(zero.prob),collapse=","),"in matrix lprob have zero probabilities for all states, please re-enter lprob matrix"))}
+  zero.prob=rowSums(exp(lprob),na.rm=TRUE)==0
+ # if (sum(zero.prob)>0) {stop(paste("Observation in row(s)",paste(which(zero.prob),collapse=","),"in matrix lprob have zero probabilities for all states, please re-enter lprob matrix"))}
 
     n=nrow(lprob);
     J=ncol(lprob);
@@ -568,8 +582,8 @@ if (level.based) best.level=rep(0,nseg) else best.level=0
  #  if ((sum(rmu==0)>0)&(model==1)&!probs) {
 #    stop("One state consists entirely of zeroes, FB algorithm will not work with Poisson dist");
 #  }
- 
- .C("viterbi2",data=as.double(data),lprob=as.double(lprob), bestcp=as.double(bestcp),bestlevel=as.double(best.level),rprior=as.double(prior),rpriortype=as.integer(ptype),nn=as.integer(n),JJ=as.integer(J),rnseg=as.integer(nseg),rmu=as.double(rmu),rsigma=as.double(rsigma),rmodel=as.integer(model), level=as.integer(level.based),rverbose=as.integer(verbose),rdebug=as.integer(debug),DUP=FALSE,PACKAGE="postCP")
+  probs=(length(lprob)>0);
+ .C("viterbi2",data=as.double(data),lprob=as.double(lprob), rprobs=as.integer(probs),bestcp=as.double(bestcp),bestlevel=as.double(best.level),rprior=as.double(prior),rpriortype=as.integer(ptype),nn=as.integer(n),JJ=as.integer(J),rnseg=as.integer(nseg),rmu=as.double(rmu),rsigma=as.double(rsigma),rmodel=as.integer(model), level=as.integer(level.based),rverbose=as.integer(verbose),rdebug=as.integer(debug),DUP=FALSE,PACKAGE="postCP")
 
 #else{
     #  .C("postCPext",lprob=as.double(lprob),nn=as.integer(n),JJ=as.integer(J),lforward=as.double(lforward),lbackward=as.double(lbackward),cp=as.double(post.cp),bestcp=as.double(bestcp),cpconfint=as.double(cpconfint),cpvector=as.double(cpvector),rci=as.double(ci),rnsamples=as.integer(nsamples),rprior=as.double(prior),rpriortype=as.integer(ptype),rmout=as.integer(keep),rverbose=as.integer(verbose),rdebug=as.integer(debug),DUP=FALSE,PACKAGE="postCP")

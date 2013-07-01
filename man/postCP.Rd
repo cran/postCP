@@ -11,7 +11,7 @@
 \usage{
 postCP(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.ind=numeric(),
 keep=TRUE,ci=0.9,viterbi=TRUE,initsegci=TRUE,nsamples=0,gen.data="n",prior=0.5,
-prior.type="n",epsilon=1e-9,eps.nb=1e-8,verbose=TRUE,debug=FALSE)
+prior.type="n",epsilon=1e-9,disp.equal=TRUE,eps.nb=1e-8,verbose=TRUE,debug=FALSE)
 }
 \arguments{
 \item{data}{A vector of observations to be segmented. Must have no missing values.}
@@ -28,6 +28,7 @@ prior.type="n",epsilon=1e-9,eps.nb=1e-8,verbose=TRUE,debug=FALSE)
 \item{prior}{Transition probabilities chosen as priors for HMM model. For homogeneous HMM, enter a scalar between 0 and 1 (default: 0.5). For heterogeneous HMM, enter a vector of probabilities, of length n for n observations or K for K hidden states.}
 \item{prior.type}{Type of prior entered. For "n": homogeneous HMM (default), "o": vector of probabilities for each observation, "s": vector of probabilities for each hidden state.}
 \item{epsilon}{Value added to mu (for Poisson data) or sigma (for normal data) to enable forward-backward in case of variance estimates of 0.}
+\item{disp.equal}{Equal dispersion parameter across all segments for negative binomial (defaults to TRUE). If disp.equal=TRUE, seg will automatically be chosen by the PDPA algorithm from Segmentor function.}
 \item{eps.nb}{Relative tolerance of BFGS method for finding MLE of negative Binomial data, increase if there are convergence problems.}
 \item{verbose}{Additional screen output, default=TRUE.}
 \item{debug}{Additional screen output for debugging purposes, default=FALSE.}
@@ -61,8 +62,8 @@ prior.type="n",epsilon=1e-9,eps.nb=1e-8,verbose=TRUE,debug=FALSE)
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.4\cr
-Date: \tab 2013-03-01\cr
+Version: \tab 1.7.0\cr
+Date: \tab 2013-07-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

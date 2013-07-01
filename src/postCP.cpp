@@ -71,7 +71,7 @@ double lsum(double la, double lb) {
 void forward(double* data, double* lforward, double* lprob, double* rprior) {
   vector<double> ldist(J);
 
-  double aux1=-0.5*log(2*M_PI);
+  double aux1=-0.5*log(2*M_PI)-log(sigma);
   double aux2=-0.5;
   //double aux3=log(0.5);
  
@@ -119,7 +119,7 @@ if (debug) Rprintf("normal?f %i\n",normal);
 void backward(double* data, double* lbackward, double* lforward, double* lprob, double* cp, double* rprior) {
   vector<double> ldist(J);
 
-  double aux1=-0.5*log(2*M_PI);
+  double aux1=-0.5*log(2*M_PI)-log(sigma);
   double aux2=-0.5;
   double priortemp1;
  // double aux3=log(0.5);
@@ -158,7 +158,7 @@ void backward(double* data, double* lbackward, double* lforward, double* lprob, 
  
     lbackward[n*j+i]=lsum(lbackward[n*j+i+1]+ldist[j]+log(1-priortemp),lbackward[n*(j+1)+i+1]+ldist[j+1]+log(priortemp1)); 
     cp[(n-1)*j+i]=exp(lforward[n*j+i]+lbackward[n*(j+1)+i+1]+ldist[j+1]+log(priortemp1)-lforward[n*J-1]-lbackward[n*J-1]);
-    if (isnan(cp[(n-1)*j+i])) cp[(n-1)*j+i]=0;
+    if (ISNAN(cp[(n-1)*j+i])) cp[(n-1)*j+i]=0;
     }
   }  
 
@@ -169,7 +169,7 @@ void backward(double* data, double* lbackward, double* lforward, double* lprob, 
 void forward_lev(double* data, double* lforward, double* lprob, double* rprior) {
   vector<double> ldist(J);
 
-  double aux1=-0.5*log(2*M_PI);
+  double aux1=-0.5*log(2*M_PI)-log(sigma);
   double aux2=-0.5;
   //double aux3=log(0.5);
  
@@ -222,7 +222,7 @@ if (debug) Rprintf("normal? %i\n",normal);
 void backward_lev(double* data, double* lbackward, double* lforward, double* lprob, double* cp, double* rprior) {
   vector<double> ldist(J);
 
-  double aux1=-0.5*log(2*M_PI);
+  double aux1=-0.5*log(2*M_PI)-log(sigma);
   double aux2=-0.5;
   double priortemp1;
  // double aux3=log(0.5);
@@ -315,7 +315,7 @@ for (int r=0; r<nsamples; r++) {
    double rand;
    double aux=0;
   
-   double aux1=-0.5*log(2*M_PI);
+   double aux1=-0.5*log(2*M_PI)-log(sigma);
    double aux2=-0.5;
 //   double aux3=log(0.5);
   
@@ -378,7 +378,7 @@ void viterbi(double* data, double* lprob, double* bestcp, double* rprior){
   lviterbi=new double[n*J];
   int* vitstate=NULL;
   vitstate=new int[n*J];
-  double aux1=-0.5*log(2*M_PI);
+  double aux1=-0.5*log(2*M_PI)-log(sigma);
   double aux2=-0.5;
   double ldist;
   if (debug) Rprintf("%.8f\n",lprob[0]);
@@ -460,7 +460,7 @@ void viterbi_lev(double* data, double* lprob, double* bestcp, double* bestlevel,
   double maxvit;
   double tempvit;
 
-  double aux1=-0.5*log(2*M_PI);
+  double aux1=-0.5*log(2*M_PI)-log(sigma);
   double aux2=-0.5;
   vector<double> ldist(J);
   if (debug) Rprintf("%.8f\n",lprob[0]);
@@ -580,12 +580,13 @@ if (debug){
 }
 
 
-void viterbi2(double* data, double* lprob, double* bestcp, double* bestlevel, double* rprior, int *rpriortype, int *nn, int *JJ, int *rnseg, double* rmu, double *rsigma,int *rmodel,int *level, int *rverbose, int *rdebug){
+void viterbi2(double* data, double* lprob, int *rprobs,double* bestcp, double* bestlevel, double* rprior, int *rpriortype, int *nn, int *JJ, int *rnseg, double* rmu, double *rsigma,int *rmodel,int *level, int *rverbose, int *rdebug){
   verbose=*rverbose;
   debug=*rdebug;
    n=*nn; 
    J=*JJ;
    nseg=*rnseg;
+   probs=*rprobs;
    int level2=*level;
    mu.resize(J);
   for (int j=0;j<J;j++){

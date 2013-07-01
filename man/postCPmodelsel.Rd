@@ -7,14 +7,19 @@
   Estimates number of segments in data using model selection criteria for change-point problems. Minimizes ICL (Information Completed Likelihood), AIC (Akaike's Information Criterion), BIC (Bayesian Information Criterion), and mBIC (modified Bayesian Information Criterion) for values specified in K.range.
 }
 \usage{
-postCPmodelsel(data,K.range,model=1,greedy=FALSE,eps.nb=1e-8) 
+postCPmodelsel(data,K.range,model=1,greedy=FALSE,
+disp.equal=TRUE,eps.nb=1e-8,prior=0.5,prior.type="n",na.rm=TRUE) 
 }
 \arguments{
 \item{data}{A vector of observations to be segmented. Must have no missing values.}
 \item{K.range}{Vector of range of possible K number of segments.}
 \item{model}{Emission distribution of observed data, 1: Poisson (default), 2: normal, 3: negative binomial.}
 \item{greedy}{Algorithm used to obtain initial segmentation for each fixed K. TRUE: use greedy algorithm based on least-squares minimization, FALSE (default): use pruned dynamic programming algorithm (PDPA), using Segmentor function.}
+\item{disp.equal}{Equal dispersion parameter across all segments for negative binomial (defaults to TRUE).}
 \item{eps.nb}{Epsilon for maximum likelihood estimation of negative binomial, if mle does not converge, set to higher value.}
+\item{prior}{Transition probabilities chosen as priors for HMM model. For homogeneous HMM, enter a scalar between 0 and 1 (default: 0.5). For heterogeneous HMM, enter a vector of probabilities, of length n for n observations or K for K hidden states.}
+\item{prior.type}{Type of prior entered. For "n":homogeneous HMM (default), "o": vector of probabilities for each observation, "s": vector of probabilities for each hidden state.}
+\item{na.rm}{Remove models with criteria NA from consideration.}
 }
 
 \value{
@@ -36,8 +41,8 @@ Greedy segmentation consists of greedy algorithm using locally optimal binary se
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.4\cr
-Date: \tab 2013-03-01\cr
+Version: \tab 1.7.0\cr
+Date: \tab 2013-07-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

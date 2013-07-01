@@ -7,13 +7,16 @@
   Obtains model selection criteria for change-point problems, after an initial set of change-points within the data has already been obtained. Calculates ICL (Information Completed Likelihood), AIC (Akaike's Information Criterion), BIC (Bayesian Information Criterion), and mBIC (modified Bayesian Information Criterion). Calculated for segment-based model, with different levels estimated for each segment.
 }
 \usage{
-postCPcrit(data,seg=numeric(),model,eps.nb=1e-8,prior=0.5,prior.type="n") 
+postCPcrit(data,seg=numeric(),model,disp.equal=TRUE,
+eps.nb=1e-8,param.nb=NULL,prior=0.5,prior.type="n") 
 }
 \arguments{
 \item{data}{A vector of observations to be segmented. Must have no missing values.}
 \item{seg}{For K segments, a vector of K-1 initial estimates of change-point locations, corresponding to the index of the last observation of the first K-1 segments.}
 \item{model}{Emission distribution of observed data, 1: Poisson (default), 2: normal, 3: negative binomial.}
+\item{disp.equal}{Equal dispersion parameter across all segments for negative binomial (defaults to TRUE). If disp.equal=TRUE, seg will automatically be chosen by the PDPA algorithm from Segmentor function.}
 \item{eps.nb}{Epsilon for maximum likelihood estimation of negative binomial, if mle does not converge, set to higher value.}
+\item{param.nb}{Parameters for maximum likelihood estimation of negative binomial if already fit by postCPmodelsel.}
 \item{prior}{Transition probabilities chosen as priors for HMM model. For homogeneous HMM, enter a scalar between 0 and 1 (default: 0.5). For heterogeneous HMM, enter a vector of probabilities, of length n for n observations or K for K hidden states.}
 \item{prior.type}{Type of prior entered. For "n":homogeneous HMM (default), "o": vector of probabilities for each observation, "s": vector of probabilities for each hidden state.}
 }
@@ -31,8 +34,8 @@ mBIC: For normal and Poisson data, modified Bayesian Information Criterion, acco
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.6.4\cr
-Date: \tab 2013-03-01\cr
+Version: \tab 1.7.0\cr
+Date: \tab 2013-07-01\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
