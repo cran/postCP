@@ -135,10 +135,11 @@ postCP.default <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),
   if (nseg>n) {
     stop("Number of segments larger than data");
   }
-  if (length(seg)>0) {
-    if (max(seg)>=n) {
-      stop("At least one change-point initialized to larger than n");
-    }}
+  if (length(seg)>0){
+    if (max(seg)>=n) stop("At least one change-point initialized to larger than n");
+	if (min(seg)<1)    stop("Location of first change-point must be at least 1");
+	if (sum(round(seg)!=seg)>0) stop("Enter all change-points as integers");
+  }
   if (viterbi==FALSE) initsegci=TRUE;
   if (initsegci==FALSE) viterbi=TRUE;
   if ((sum(data<0)>0)&model==1) {
@@ -486,9 +487,11 @@ viterbi <- function(data=numeric(),seg=integer(),model=1,lprob=numeric(),level.i
     stop("Number of segments larger than data");
   }
   if (length(seg)>0){
-  if (max(seg)>=n) {
-    stop("At least one change-point initialized to larger than n");
-  }}
+    if (max(seg)>=n) stop("At least one change-point initialized to larger than n");
+	if (min(seg)<1)    stop("Location of first change-point must be at least 1");
+	if (sum(round(seg)!=seg)>0) stop("Enter all change-points as integers");
+  }
+  
   if ((sum(data<0)>0)&model==1) {
     stop("Negative numbers with Poisson distribution specified, choose model=2");
   }

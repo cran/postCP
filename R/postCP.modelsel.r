@@ -6,7 +6,6 @@ lesum<-function(lx) { # finds log of sum of exponentials
      }
 
 mleNB <- function(x,eps.nb=1e-8){
-require(MASS);
 if ((length(x)>1)&(mean(x)>0)) out=try(fitdistr(x,"Negative Binomial",control=list(reltol=eps.nb))$estimate) else out=c(mean(x),mean(x))+eps.nb;
 if (class(out)=="try-error") out=c(mean(x),mean(x))+eps.nb;
 return(out);
@@ -19,6 +18,22 @@ postCPcrit<-function(data,seg=numeric(),model,disp.equal=TRUE,eps.nb=1e-8, param
   
   n=length(data);
   bestcp=numeric();
+  table.seg=table(seg)
+  if (sum(table.seg>1)>0) {    
+    stop(paste("Change-point",names(table.seg)[table.seg>1],"is repeated at least twice, please include only once"));
+  }
+  seg=sort(seg)
+  if (n<2) {
+    stop("Not enough data to segment");
+  }
+  if (k>n) {
+    stop("Number of segments larger than data");
+  }
+  if (length(seg)>0){
+    if (max(seg)>=n) stop("At least one change-point initialized to larger than n");
+	if (min(seg)<1)    stop("Location of first change-point must be at least 1");
+	if (sum(round(seg)!=seg)>0) stop("Enter all change-points as integers");
+  }
   if (!is.element(model,1:3)) stop("Please enter model= 1 (Poisson), 2 (normal), 3 (negative binomial)");
   if (model==3&disp.equal) {
     if(class(param.nb)=="NULL"){
@@ -139,7 +154,7 @@ postCPcrit<-function(data,seg=numeric(),model,disp.equal=TRUE,eps.nb=1e-8, param
   results;
 }
 
-postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,disp.equal=TRUE,eps.nb=1e-8,prior=0.5,prior.type="n",na.rm=TRUE){
+postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,disp.equal=TRUE,eps.nb=1e-8,prior=0.5,prior.type="n"){
 
   n=length(data);
   K.min=K.range[1];
@@ -152,20 +167,26 @@ postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,disp.equal=TRUE,eps
   k=K.min;
   if (length(K.range)<2) stop("Please choose models with at least two different values of K.");
   if (!greedy) {
-     if (model==2) {seg.matrix=cghseg:::segmeanCO(data, Kmax=K.max)$t.est;
-	     segout=seg.matrix;
-	  }else {
 	  segout=Segmentor(data,model=model,Kmax=K.max);
-	  seg.matrix=getBreaks(segout);}
+	  seg.matrix=getBreaks(segout);
   }  else segout=NULL;
 
   modelsel1<- function(k,data,segout, model, disp.equal,eps.nb = eps.nb, prior, prior.type){
+    errorinseg=FALSE;
   	 if (k>1) {
-	    if (class(segout)=="NULL") seg=GreedySegmente(data,k)[2:k]-1 else {
-		 if (model==2) seg=segout[k,1:(k-1)] else seg=(getBreaks(segout))[k,1:(k-1)];}} else seg=numeric();
-	# if (k>1) if (max(table(seg))>1) stop("At least one change-point repeated twice");
-	 if ((class(segout)!="NULL"&(model==3))&disp.equal) param.nb=list(prob=getParameters(segout)[k,1:k],disp=getOverdispersion(segout)) else param.nb=NULL;
-	out=postCPcrit(data,seg,model,disp.equal,eps.nb, param.nb, prior, prior.type);
+	    if (class(segout)=="NULL") seg=GreedySegmente(data,k)[2:k]-1 else  seg=(getBreaks(segout))[k,1:(k-1)];
+		seg=sort(seg);
+		table.seg=table(seg);
+        if ((max(table(seg))>1)| (max(seg)>=n)|(min(seg)<1)|(sum(round(seg)!=seg)>0)){
+           errorinseg=TRUE;
+		   if (model!=3) { scores=rep(NA,4); names(scores)=c("ICL","AIC","BIC","mBIC")} else {scores=rep(NA,3); names(scores)=c("ICL","AIC","BIC")};
+            out=list(scores=scores,cp.loc=rep(NA,k-1));
+        }
+	} else seg=numeric();
+	if (!errorinseg){	  
+	  if ((class(segout)!="NULL"&(model==3))&disp.equal) param.nb=list(prob=getParameters(segout)[k,1:k],disp=getOverdispersion(segout)) else param.nb=NULL;
+	  out=postCPcrit(data,seg,model,disp.equal,eps.nb, param.nb, prior, prior.type);
+	 }
 	return(out);
   }
   out=sapply(K.range,modelsel1,data=data,segout=segout,model=model,disp.equal=disp.equal,eps.nb=eps.nb, prior=prior, prior.type=prior.type);
@@ -179,11 +200,7 @@ postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,disp.equal=TRUE,eps
   if (model!=3) {
     mBIC=scores[names(scores)=="mBIC"];    names(mBIC)=K.range;
   }
-  if (na.rm){
-     ICL=ICL[!is.na(ICL)];
-	 AIC=AIC[!is.na(AIC)];
-	 BIC=BIC[!is.na(BIC)];
-  }
+  
   best.K.ICL <- which.min(ICL);
   best.K.AIC <- which.min(AIC);
   best.K.BIC <- which.min(BIC);
@@ -193,7 +210,6 @@ postCPmodelsel <- function(data,K.range,model=1,greedy=FALSE,disp.equal=TRUE,eps
   cp.loc$BIC = bestcp[[best.K.BIC]];
   cp.loc$AIC = bestcp[[best.K.AIC]];
   if (model!=3) { 
-	names(mBIC)=K.range;
 	best.K.mBIC=which.min(mBIC); 
 	} else best.K.mBIC=NA;
   if (model!=3) cp.loc$mBIC = bestcp[[best.K.mBIC]];

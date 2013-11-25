@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
-#include <cmath>
+
 #include <ctime>
 
 #define INF 1e300
@@ -158,7 +158,7 @@ void backward(double* data, double* lbackward, double* lforward, double* lprob, 
  
     lbackward[n*j+i]=lsum(lbackward[n*j+i+1]+ldist[j]+log(1-priortemp),lbackward[n*(j+1)+i+1]+ldist[j+1]+log(priortemp1)); 
     cp[(n-1)*j+i]=exp(lforward[n*j+i]+lbackward[n*(j+1)+i+1]+ldist[j+1]+log(priortemp1)-lforward[n*J-1]-lbackward[n*J-1]);
-    if (ISNAN(cp[(n-1)*j+i])) cp[(n-1)*j+i]=0;
+    if (isnan(cp[(n-1)*j+i])) cp[(n-1)*j+i]=0;
     }
   }  
 

@@ -30,8 +30,8 @@ prior=0.5,prior.type="n",verbose=TRUE,debug=FALSE)
 \tabular{ll}{
 Package: \tab postCP\cr
 Type: \tab Package\cr
-Version: \tab 1.7.0\cr
-Date: \tab 2013-07-01\cr
+Version: \tab 1.7.2\cr
+Date: \tab 2013-11-25\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
